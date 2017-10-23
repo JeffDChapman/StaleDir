@@ -49,7 +49,7 @@
             // tmrCheckFreq
             // 
             this.tmrCheckFreq.Enabled = true;
-            this.tmrCheckFreq.Interval = 120000;
+            this.tmrCheckFreq.Interval = 1200000;
             this.tmrCheckFreq.Tick += new System.EventHandler(this.tmrCheckFreq_Tick);
             // 
             // label1
@@ -91,7 +91,7 @@
             this.btnToggle.Name = "btnToggle";
             this.btnToggle.Size = new System.Drawing.Size(46, 22);
             this.btnToggle.TabIndex = 3;
-            this.btnToggle.Text = "On";
+            this.btnToggle.Text = "on";
             this.btnToggle.UseVisualStyleBackColor = true;
             this.btnToggle.Click += new System.EventHandler(this.btnToggle_Click);
             // 

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Media;
+using Microsoft.Win32;
 
 namespace LatestFile
 {
@@ -19,6 +20,7 @@ namespace LatestFile
         string chkExt;
         TimeSpan newestFile;
         Color savedColor;
+        bool ScreenLocked = false;
 
         public LatestFileForm()
         {
@@ -27,6 +29,9 @@ namespace LatestFile
 
         private void LatestFileForm_Load(object sender, EventArgs e)
         {
+            // for testing
+            // this.tmrCheckFreq.Interval = 10000;            
+            
             this.dialogGetFile.ShowDialog();
             string getFile = this.dialogGetFile.FileName;
             if (getFile == "")
@@ -41,8 +46,21 @@ namespace LatestFile
             this.Text = displayDir;
             savedColor = this.BackColor;
 
-            // for testing
-            // this.tmrCheckFreq.Interval = 10000;
+            SystemEvents.SessionSwitch += new SessionSwitchEventHandler((sssender, sse) =>
+            {
+                switch (sse.Reason)
+                {
+                    //If Reason is Lock, Turn off the monitor.
+                    case SessionSwitchReason.SessionLock:
+                        ScreenLocked = true;
+                        break;
+
+                    case SessionSwitchReason.SessionUnlock:
+                        ScreenLocked = false;
+                        break;
+                }
+            });
+
         }
 
         private void tmrCheckFreq_Tick(object sender, EventArgs e)
@@ -63,11 +81,15 @@ namespace LatestFile
             catch {}
 
             if (newestFile > TimeSpan.FromHours(Convert.ToDouble(this.hrsAlert.Value)))
-                { this.tmrAlertSound.Enabled = true;
-                string titleSave = this.Text;
-                this.Text = "** " + titleSave;
-                this.BackColor = Color.Red;
-            }
+                {
+                    if (this.tmrAlertSound.Enabled == false)
+                    {
+                        this.tmrAlertSound.Enabled = true;
+                        string titleSave = this.Text;
+                        this.Text = "** " + titleSave;
+                        this.BackColor = Color.Red;
+                    }
+                }
                 else { this.tmrAlertSound.Enabled = false;
                 this.BackColor = savedColor;
                 }
@@ -90,6 +112,11 @@ namespace LatestFile
 
         private void tmrAlertSound_Tick(object sender, EventArgs e)
         {
+            bool sSave = SleepCheck.IsScreensaverRunning();
+            bool isLocked = SleepCheck.IsWorkstationLocked();
+            if (sSave || isLocked || ScreenLocked)
+             { return; }
+
             SoundPlayer simpleSound = new SoundPlayer(@"C:\Users\jchapman\Documents\Visual Studio 2013\Projects\LatestFile\LatestFile\baby_cry.wav");
             simpleSound.Play();  
         }
